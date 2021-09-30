@@ -17,17 +17,17 @@
 						size_hint_y: 0.2
 						Label:
 							size_hint_y: 0.1
-							text: "layer0"
+							text: "Chapter"
 						TextInput:
 							size_hint_y: 0.1
-							id: content_layer0
+							id: _chapter
 							multiline: False
 						Label:
 							size_hint_y: 0.1
-							text: "layer1"
+							text: "Topic"
 						TextInput:
 							size_hint_y: 0.1
-							id: content_layer1
+							id: _topic
 							multiline: False
 					GridLayout:
 						cols: 1
@@ -35,7 +35,7 @@
 							size_hint_y: 0.1
 							text: "Content"
 						TextInput:
-							id: content_layer2
+							id: _info
 							multiline: True
 
 				BoxLayout:
@@ -72,7 +72,7 @@
 		size: root.width, root.height
 
 		BoxLayout:
-			id: layer0
+			id: chapter_
 			cols: 1
 			size_hint_x: 0.3
 			orientation: 'vertical'
@@ -84,12 +84,14 @@
 
 
 		BoxLayout:
-			id: layer1
+			id: topic_
 			cols: 1
 			size_hint_x: 0.3
 			orientation: 'vertical'
 
 		BoxLayout:
 			cols: 1
-			# Button:
-			# 	text: "COLUMN 1"
+			TextInput:
+				id: info_
+				multiline: True
+				disabled: True
