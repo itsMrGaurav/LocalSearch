@@ -1,7 +1,8 @@
 #: import Factory kivy.factory.Factory
 
-<CustomPopup@Popup>:
+<CustomAddPopup@Popup>:
 	auto_dismiss: False
+	title: "Add Content"
 	BoxLayout:
 		BoxLayout:
 			size: root.size
@@ -43,7 +44,7 @@
 					orientation: 'vertical'
 					Label:
 						size_hint_y: 0.5
-						text: """- a valid input for layer0\nand layer1 consists only of\nalphabets (3 to 10 chars max)\n"""
+						text: """- a valid input for \nChapter and Topic consists \nof 1 to 10 chars max\n"""
 					Label:
 						id: no_validate
 						size_hint_y: 0.4
@@ -64,6 +65,44 @@
 					text: "BACK"
 					on_press: root.dismiss()
 
+<CustomRemovePopup@Popup>:
+	title: "Remove Content"
+	auto_dismiss: False
+	size_hint: (None, None)
+	height: 320
+	width: 480
+	BoxLayout:
+		GridLayout:
+			cols: 2
+			Label:
+				text: "Chapter"
+			TextInput:
+				id: _chapter_
+				multiline: False
+			Label:
+				text: "Topic"
+			TextInput:
+				id: _topic_
+				multiline: False
+			Button:
+				text: "REMOVE"
+				on_press: root._remove_()
+			Button:
+				text: "BACK"
+				on_press: root.dismiss()
+
+
+<CustomErrorPopup@Popup>:
+	title: "Error"
+	size_hint: (None, None)
+	width: 240
+	height: 120
+	Button:
+		id: err
+		text: "Invalid Input"
+		on_press: root.dismiss()
+
+
 <MyLayout>:
 	BoxLayout:
 		cols: 3
@@ -76,12 +115,6 @@
 			cols: 1
 			size_hint_x: 0.3
 			orientation: 'vertical'
-			Button:
-				text: "+ADD CHAPTER"
-				size_hint_y: None
-				height: 50
-				on_press: root.add_item_layer0()
-
 
 		BoxLayout:
 			id: topic_

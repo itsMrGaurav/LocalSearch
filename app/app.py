@@ -12,7 +12,7 @@ from kivy.properties import StringProperty
 
 Builder.load_file('design.kv')
 
-class CustomPopup(Popup):
+class CustomAddPopup(Popup):
 	def __init__(self, **kwargs):
 		super(Popup, self).__init__(**kwargs)
 		self.dirname = ""
@@ -27,24 +27,13 @@ class CustomPopup(Popup):
 		self.dirname = self.ids._chapter.text.strip().lower()
 		self.filename = self.ids._topic.text.strip().lower()
 		self.info = self.ids._info.text.strip()
-		if (not self.dirname or not self.filename or not self.info):
-			err_btn = Button(text = "Input fields cannot be empty!!")
-			err_pop = Popup(
-				title = "ERROR",
-				size_hint= (None, None),
-				width = 320,
-				height = 240,
-				content = err_btn
-			)
-			err_btn.bind(on_press = err_pop.dismiss)
-			err_pop.open()
+		pat = re.compile(".{1,10}$")
+		if (not pat.match(self.dirname) or not pat.match(self.filename)):
+			self.ids.no_validate.text = "Invalid input for \n Chapter or Topic"
 			return
-		else:
-			pat = re.compile("^[a-z]{3,10}$")
-			if (not pat.match(self.dirname) or not pat.match(self.filename)):
-				self.ids.no_validate.text = "Invalid input for \n Chapter or Topic"
-				return
-
+		elif (not self.info):
+			self.ids.no_validate.text = "Info field cannot be empty!!"
+			return
 		self.ids.no_validate.text = ""
 		self.ids.add_button.disabled= False
 
@@ -75,7 +64,7 @@ class CustomPopup(Popup):
 					height = 50,
 					on_press = self.main_obj.pressed_chapter
 				)
-				self.main_obj.ids.chapter_.add_widget(btn, index=1)
+				self.main_obj.ids.chapter_.add_widget(btn, index =1)
 		fp.close()
 		
 		# list new filename into files list
@@ -98,7 +87,79 @@ class CustomPopup(Popup):
 			fp.write(self.info+'\n')
 		fp.close()
 
+class CustomErrorPopup(Popup):
+	pass
 
+
+class CustomRemovePopup(Popup):
+	def __init__(self, **kwargs):
+		super(CustomRemovePopup, self).__init__(**kwargs)
+
+	def _open(self, main):
+		self.main_obj = main
+		self.open()
+
+	def _remove_(self):
+		dirname = self.ids._chapter_.text.strip().lower()
+		filename = self.ids._topic_.text.strip().lower()
+		error_pop = CustomErrorPopup()
+		self.ids._chapter_.text = ""
+		self.ids._topic_.text = ""
+
+		if (not dirname or not filename):
+			error_pop.ids.err.text = "Input fields cannot be empty"
+			error_pop.open()
+
+		if (filename == "*" or filename == "all"):
+			dir_exst = False 
+			with open("../data/dirs.txt","r+") as fp:
+				for dirt in fp.readlines():
+					if dirt[:-1] == dirname:
+						dir_exst = True
+				if not dir_exst:
+					error_pop.ids.err.text = "Chapter Not Found"
+					error_pop.open()
+				else:
+					fp.seek(0,0)
+					ft = open("../data/dirs2.txt", "w")
+					for dirt in fp.readlines():
+						if dirt[:-1] == dirname:
+							continue
+						ft.write(dirt)
+					ft.close()
+					os.remove("../data/dirs.txt")
+					os.rename("../data/dirs2.txt", "../data/dirs.txt")
+					os.system(f"rm -rf ../data/{dirname}")
+			fp.close()
+		
+		else:
+			file_exst = False
+			try:
+				with open(f"../data/{dirname}/files.txt","r+") as fp:
+					for file in fp.readlines():
+						if file[:-1] == filename:
+							file_exst = True
+					if not file_exst:
+						error_pop.ids.err.text = "Topic Not Found"
+						error_pop.open()
+					else:
+						fp.seek(0,0)
+						ft = open(f"../data/{dirname}/files2.txt","w")
+						for file in fp.readlines():
+							if file[:-1] == filename:
+								continue
+							ft.write(file)
+						ft.close()
+						os.remove(f"../data/{dirname}/files.txt")
+						os.rename(f"../data/{dirname}/files2.txt", f"../data/{dirname}/files.txt")
+						os.remove(f"../data/{dirname}/{filename}.txt")
+				fp.close()
+			except:
+				error_pop.ids.err.text = "Chapter Not Found"
+				error_pop.open()
+
+		self.dismiss()
+		self.main_obj.add_chapters()
 
 
 class MyLayout(Widget):
@@ -107,9 +168,27 @@ class MyLayout(Widget):
 	def __init__(self,**kwargs):
 		super(MyLayout, self).__init__(**kwargs)
 		self.add_chapters()
-		self.pop = CustomPopup()
+		self.add_popup = CustomAddPopup()
+		self.remove_popup = CustomRemovePopup()
 
 	def add_chapters(self):
+		self.ids.chapter_.clear_widgets(children = None)
+		self.ids.topic_.clear_widgets(children = None)
+		self.ids.info_.text = ""
+		add_btn = Button(
+			text = "+ADD",
+			size_hint_y = None,
+			height = 50,
+			on_press = self.add_item
+		)
+		self.ids.chapter_.add_widget(add_btn)
+		rmv_btn = Button(
+			text = "-REMOVE",
+			size_hint_y = None,
+			height = 50,
+			on_press = self.remove_item
+		)
+		self.ids.chapter_.add_widget(rmv_btn)
 		try:
 			with open("../data/dirs.txt",'r') as fp:
 				for line in fp.readlines():
@@ -119,14 +198,17 @@ class MyLayout(Widget):
 						height = 50,
 						on_press = self.pressed_chapter
 					)
-					self.ids.chapter_.add_widget(btn, index=1)
+					self.ids.chapter_.add_widget(btn, index = 1)
 			fp.close()
 
 		except FileNotFoundError:
 			os.system("touch ../data/dirs.txt")
 
-	def add_item_layer0(self):
-		dataset = self.pop._open(self)
+	def add_item(self, instance):
+		self.add_popup._open(self)
+
+	def remove_item(self, instance):
+		self.remove_popup._open(self)
 
 	def pressed_chapter(self, instance):
 		self.dirname = instance.text.lower()
@@ -141,7 +223,7 @@ class MyLayout(Widget):
 					height = 50,
 					on_press = self.pressed_topic
 				)
-				self.ids.topic_.add_widget(btn, index=1)
+				self.ids.topic_.add_widget(btn)
 
 
 	def pressed_topic(self, instance):
@@ -150,7 +232,6 @@ class MyLayout(Widget):
 		with open(f"../data/{self.dirname}/{filename}.txt") as fp:
 			self.ids.info_.text = ''.join(fp.readlines())
 		fp.close()
-		self.dirname = ""
 		
 
 class LocalSearchApp(App):
