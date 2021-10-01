@@ -1,4 +1,47 @@
-#: import Factory kivy.factory.Factory
+
+<RoundedButton@Button>:
+	background_color: (0,0,0,0)
+	background_normal: ''
+	canvas.before:
+		Color:
+			rgba: (158/255.0, 73/255.0, 145/255.0, 1)
+		RoundedRectangle:
+			size: self.size
+			pos: self.pos
+			radius: [8]
+
+<RoundedButtonGreen@Button>:
+	background_color: (0,0,0,0)
+	background_normal: ''
+	canvas.before:
+		Color:
+			rgba: (11/255.0,135/255.0,15/255.0,1)
+		RoundedRectangle:
+			size: self.size
+			pos: self.pos
+			radius: [8]
+
+<RoundedButtonRed@Button>:
+	background_color: (0,0,0,0)
+	background_normal: ''
+	canvas.before:
+		Color:
+			rgba: (135/255.0,21/255.0,11/255.0,1)
+		RoundedRectangle:
+			size: self.size
+			pos: self.pos
+			radius: [8]
+
+<CustomLabel@Label>:
+	background_normal: ''
+	background_color: (17/255.0,26/255.0,28/255.0,1)
+	canvas.before:
+		Color:
+			rgba: self.background_color
+		RoundedRectangle:
+			size: self.size
+			pos: self.pos
+			radius: [8]
 
 <CustomAddPopup@Popup>:
 	auto_dismiss: False
@@ -44,11 +87,11 @@
 					orientation: 'vertical'
 					Label:
 						size_hint_y: 0.5
-						text: """- a valid input for \nChapter and Topic consists \nof 1 to 10 chars max\n"""
+						text: """- A valid input for\nChapter and Topic\nconsists of 1 to 10\nchars max\n- In order to update\nsome topic or some\nchapter, address the chapter\nand topic name correctly\n"""
 					Label:
 						id: no_validate
 						size_hint_y: 0.4
-					Button:
+					RoundedButtonGreen:
 						size_hint_y: 0.1
 						text: "Validate"
 						on_press: root._validate()
@@ -56,12 +99,14 @@
 			BoxLayout
 				size_hint_y: 0.1
 				orientation: 'horizontal'
-				Button:
+				padding: 10
+				spacing: 10
+				RoundedButtonGreen:
 					id: add_button
 					text: "ADD"
 					disabled: True
 					on_press: root._add()
-				Button:
+				RoundedButtonRed:
 					text: "BACK"
 					on_press: root.dismiss()
 
@@ -74,6 +119,8 @@
 	BoxLayout:
 		GridLayout:
 			cols: 2
+			padding: 10
+			spacing: 10
 			Label:
 				text: "Chapter"
 			TextInput:
@@ -84,10 +131,10 @@
 			TextInput:
 				id: _topic_
 				multiline: False
-			Button:
+			RoundedButtonRed:
 				text: "REMOVE"
 				on_press: root._remove_()
-			Button:
+			RoundedButtonGreen:
 				text: "BACK"
 				on_press: root.dismiss()
 
@@ -105,26 +152,80 @@
 
 <MyLayout>:
 	BoxLayout:
-		cols: 3
-		spacing: 10
-		padding: 10
 		size: root.width, root.height
-
+		orientation: 'vertical'
 		BoxLayout:
-			id: chapter_
-			cols: 1
-			size_hint_x: 0.3
-			orientation: 'vertical'
-
+			orientation: 'horizontal'
+			size_hint_y: 0.1
+			padding: 10
+			spacing: 10
+			CustomLabel:
+				id: label1
+				text: "CHAPTERS"
+				size_hint_x: 0.3
+			CustomLabel:
+				id: label2
+				text: "TOPICS"
+				size_hint_x: 0.3
+			CustomLabel:
+				text: "CONTENT"
+		
 		BoxLayout:
-			id: topic_
-			cols: 1
-			size_hint_x: 0.3
-			orientation: 'vertical'
+			orientation: 'horizontal'
+			spacing: 10
+			padding: 10
+			size_hint_y: 0.9
+			ScrollView:
+				size_hint: (0.3, 1)
+				do_scroll_x: False
+				do_scroll_y: True		
+				BoxLayout:
+					id: chapter_
+					padding: 10
+					spacing: 10
+					cols: 1
+					size_hint_x: 1
+					size_hint_y: None
+					height: self.minimum_height
+					orientation: 'vertical'
 
-		BoxLayout:
-			cols: 1
-			TextInput:
-				id: info_
-				multiline: True
-				disabled: True
+			ScrollView:
+				size_hint: (0.3, 1)
+				do_scroll_x: False
+				do_scroll_y: True		
+				
+				BoxLayout:
+					id: topic_
+					padding: 10
+					spacing: 10
+					cols: 1
+					size_hint_x: 1
+					size_hint_y: None
+					height: self.minimum_height
+					orientation: 'vertical'
+
+			BoxLayout:
+				orientation: 'vertical'
+				size_hint_y: 1
+				spacing: 10
+				ScrollView:
+					size_hint: (1, None)
+					size_hint_y: 1
+					do_scroll_x: False
+					do_scroll_y: True
+					TextInput:
+						id: info_
+						background_normal: ''
+						background_color: (158/255.0, 73/255.0, 145/255.0, 1)
+						font_size: 17
+						foreground_color: (1, 1, 1, 1)
+						multiline: True
+						size_hint_y: None
+						height: self.minimum_height
+						disabled: True
+
+				RoundedButtonGreen:
+					text: "Update"
+					size_hint_y: 0.1
+					size_hint_x: 0.5
+					on_press: root.update_content()

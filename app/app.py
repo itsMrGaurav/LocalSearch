@@ -9,8 +9,29 @@ from kivy.lang.builder import Builder
 from kivy.uix.button import Button
 from kivy.uix.popup import Popup
 from kivy.properties import StringProperty
+from kivy.core.window import Window
+from kivy.utils import get_color_from_hex
+from kivy.graphics import Color, Rectangle
+
 
 Builder.load_file('design.kv')
+
+
+BACKGROUND_COLOR = '#ffffff'
+# BACKGROUND_COLOR = '#636661'
+
+class CustomErrorPopup(Popup):
+	pass
+
+class RoundedButton(Button):
+	pass
+
+class RoundedButtonGreen(Button):
+	pass
+
+class RoundedButtonRed(Button):
+	pass
+
 
 class CustomAddPopup(Popup):
 	def __init__(self, **kwargs):
@@ -58,7 +79,7 @@ class CustomAddPopup(Popup):
 			if not dir_exst:
 				os.system(f"mkdir ../data/{self.dirname}")
 				fp.write(self.dirname+'\n')
-				btn = Button(
+				btn = RoundedButton(
 					text = self.dirname.upper(),
 					size_hint_y = None,
 					height = 50,
@@ -87,8 +108,6 @@ class CustomAddPopup(Popup):
 			fp.write(self.info+'\n')
 		fp.close()
 
-class CustomErrorPopup(Popup):
-	pass
 
 
 class CustomRemovePopup(Popup):
@@ -175,14 +194,14 @@ class MyLayout(Widget):
 		self.ids.chapter_.clear_widgets(children = None)
 		self.ids.topic_.clear_widgets(children = None)
 		self.ids.info_.text = ""
-		add_btn = Button(
+		add_btn = RoundedButtonGreen(
 			text = "+ADD",
 			size_hint_y = None,
 			height = 50,
-			on_press = self.add_item
+			on_press = self.add_item,
 		)
 		self.ids.chapter_.add_widget(add_btn)
-		rmv_btn = Button(
+		rmv_btn = RoundedButtonRed(
 			text = "-REMOVE",
 			size_hint_y = None,
 			height = 50,
@@ -192,7 +211,7 @@ class MyLayout(Widget):
 		try:
 			with open("../data/dirs.txt",'r') as fp:
 				for line in fp.readlines():
-					btn =  Button(
+					btn =  RoundedButton(
 						text = line[:-1].upper(),
 						size_hint_y = None,
 						height = 50,
@@ -212,12 +231,15 @@ class MyLayout(Widget):
 
 	def pressed_chapter(self, instance):
 		self.dirname = instance.text.lower()
-
+		self.ids.label1.text = instance.text
+		self.ids.label2.text = "TOPICS"
 		self.ids.topic_.clear_widgets(children = None)
+		self.ids.info_.text = ""
+		self.ids.info_.disabled = True
 
 		with open(f"../data/{self.dirname}/files.txt",'r') as fp:
 			for topic in fp.readlines():
-				btn =  Button(
+				btn =  RoundedButton(
 					text = topic[:-1].upper(),
 					size_hint_y = None,
 					height = 50,
@@ -227,15 +249,25 @@ class MyLayout(Widget):
 
 
 	def pressed_topic(self, instance):
-		filename = instance.text.lower()
+		self.filename = instance.text.lower()
+		self.ids.label2.text = instance.text
 		self.ids.info_.text = ""
-		with open(f"../data/{self.dirname}/{filename}.txt") as fp:
+		with open(f"../data/{self.dirname}/{self.filename}.txt", 'r') as fp:
 			self.ids.info_.text = ''.join(fp.readlines())
+		self.ids.info_.disabled = False
 		fp.close()
-		
+
+	def update_content(self):
+		new_content = self.ids.info_.text
+		if (not new_content):
+			return
+		with open(f"../data/{self.dirname}/{self.filename}.txt", 'w') as fp: 
+			fp.write(new_content)
+		fp.close()		
 
 class LocalSearchApp(App):
 	def build(self):
+		Window.clearcolor = get_color_from_hex(BACKGROUND_COLOR)
 		return MyLayout()
 
 if __name__ == "__main__":
